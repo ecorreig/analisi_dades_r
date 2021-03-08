@@ -1,0 +1,81 @@
+---
+title: "Classe 1: Exercicis"
+author: "El vostre nom"    # Poseu aquí davant el vostre nom! No us oblideu de les cometes
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# No toqueu aquesta part
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1234)
+```
+
+# Instruccions:
+
+1. Heu de solucionar els exercicis en aquest mateix fitxer.
+1. Recordeu de posar el vostre nom a dalt, on diu author:.
+1. Poseu també el vostre nom a l'html que es creï.
+1. Heu d'entregar tots els exercicis pujant-los al moodle.
+1. Els heu d'entregar abans de la següent pràctica.
+1. Us recomanem que feu els exercicis en grup.
+
+# Exercici 1
+
+* On és físicament el teu espai de treball?
+
+```{r}
+# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
+
+```
+
+* Llista els objectes d'aquest espai de treball
+* Crea un nou objecte que sigui la suma de dos nombres
+* Esborra aquest objecte
+
+# Exercici 2
+
+
+* Descarrega el paquet RXKCD (fora del markdown)
+* Consulta l'ajuda per saber què fa aquest paquet (fora del markdown)
+* Afegeix la llibreria 
+* Investiga què fa la funció getXKCD (fora del markdown)
+* Consulta el còmic 539
+
+```{r}
+# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
+
+```
+
+
+
+# Exercici 3: vectors
+
+* Busca informació de la funció sample() (fora del markdown, és a dir, a la consola). Per exemple, si volem 10 números entre el 0 i 20 escriurem:
+sample(0:20, 10).
+* Genera una mostra aleatòria de 20 nombres entre 1 i 100.
+* Genera un vector de nom a amb 20 elements del 1 al 40 cada 2.
+* Genera un vector de nom b amb 20 elements on es repeteixin alternativament els valors "home" i "dona" (recorda la funció rep).
+* Genera un vector de nom d amb 20 elements on es repeteixin alternativament els valors "control" i "intervenció"
+* Genera un vector de nom e resultat de triar els valor més petits de 25 del vector a (recorda operacions amb vectors).
+
+```{r}
+# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
+
+```
+
+
+#Exercici 4: dataframes
+
+* Genera un data frame de nom "dades" amb informació d'un grup de 10 pacients:
+	- Index (numèrica: genera 10 números del 1 al 10).
+	- Edat  (numèrica: genera 10 números aleatoris entre el 18 i el 99. 
+	- Sexe  (factor: genera 5 parelles Home/ Dona)
+* crea un nou dataframe amb les dades dels primeres pacients i les variables d'índex i edat. 
+* Crea un nou dataframe amb només les dones. **Pista: recorda que en la subselecció, si volem agafar totes les columes, és fa en la forma dades[condició,]**
+* Crea un altre dataframe amb els pacients amb l'edat per sobre de la mitjana.
+
+
+```{r}
+# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
+
+```

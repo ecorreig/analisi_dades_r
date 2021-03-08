@@ -1,0 +1,71 @@
+---
+title: "Classe 2: Exercicis"
+author: "El vostre nom"    # Poseu aquí davant el vostre nom! No us oblideu de les cometes
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+# No toqueu aquesta part
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1234)
+```
+
+# Instruccions:
+
+1. Heu de solucionar els exercicis en aquest mateix fitxer.
+1. Recordeu de posar el vostre nom a dalt, on diu author:.
+1. Poseu també el vostre nom a l'html que es creï.
+1. Heu d'entregar tots els exercicis pujant-los al moodle.
+1. Els heu d'entregar abans de la següent pràctica.
+1. Us recomanem que feu els exercicis en grup.
+
+#Exercici 1
+
+
+```{r}
+# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
+
+```
+
+* Obre el fitxer de text FITXERTEXT1
+* Llegeix-lo amb R tenim en compte el seu format i desa'l a un dataframe que anomenarem dades.
+* Mira l'estructura del dataframe dades.
+* Visualitza les primeres files.
+* Refés l'estructura de les variables que consideris oportunes.
+* Transforma la variable GRUP en un variable amb dos nivells: Control (0) i Intervenció (1)
+* Verifica els canvis (per exemple amb l'estructura)
+* Fes un diagrama de caixes del TAS segons el sexe.
+* Fes un diagrama de caixes del TAS segons la nova variable Control/Intervenció que has creat.
+
+
+#Exercici 2
+
+* Obre el fitxer FITXEREXCEL
+* Llegeix el fitxer excel FITXEREXCEL i desa'l al dataframe excel1
+* Mira l'estructura del dataframe excel1
+* Visualitza'n les dades
+* Categoritza la variable TAS basal i final: hipotens <90 normotens 90-119 hipertens >=120
+* Crea una variable que sigui la diferencia entre la TAS basal i TAS final
+* Crea un data frame amb les dades de les dones. 
+* Crea un data frame amb les dades de les dones amb un TAS a la V1 >=120
+* Amb la base de dades completa, fes un diagrama de punts amb el TASBASAL a l'eix X i el TASFINAL a l'eix X.
+* Elimina la variable ID
+
+#Exercici 3
+
+* Llegeix el fitxer excel "diabetes"
+* Fes un summary 
+* Calcula els estadístics descriptius de "chol" 
+* Calcula els estadístics descriptius de "chol" en els majors iguals de 65 anys
+* Crea a la variable categòrica de menors o majors de 65 
+* Calcula els estadístics descriptius de "chol" en funció de la variable creada
+
+
+#Exercici 4
+
+* Analitza graficament la distribució de la variable hdl
+* Analitza graficament la distribució de la variable time.ppn
+* Fes un boxplot de la variable chol en funció de la variable edat >65
+* Fes un gràfic de barres que mostri els percentatges de la variable frame en funció de la variable edat >65
+* Fes una taula de contingència 
+
