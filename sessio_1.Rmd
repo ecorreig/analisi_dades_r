@@ -127,6 +127,8 @@ Part II: iniciació a R
 
 > https://www.udemy.com/course/r-programming/
 
+> https://github.com/ecorreig/analisi_dades_r
+
 ## Obtenir informació i ajuda
 
 Llocs on treure informació sobre llibreries, tutorials o demanar ajuda:
