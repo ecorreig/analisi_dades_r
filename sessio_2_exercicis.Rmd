@@ -1,0 +1,28 @@
+---
+title: "Sessió 2: Exercicis"
+author: "El vostre nom" 
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# No toqueu aquesta part
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1234)
+```
+
+# Exercici 1
+
+Importa un fitxer de cada tipus dels que trobis a l'input. Assegura't que estiguin ben codificats.
+
+Expora els objectes resultants fent servir les funcions str, summary i View.
+
+# Exercici 2
+
+Importa dades sobre casos de COVID-19 de l'últim mes a Reus i a Tarragona.
+
+- Quants n'hi ha hagut?
+- Ara importa només els positius per PCR.
+- Importa només aquelles observacions en les que hi ha hagut més de 5 casos.
+- Quin ha sigut el dia i la comarca amb més casos de l'últim mes?
+- Hi ha hagut més casos en homes o en dones?
+- En quina comarca hi ha hagut més casos totals?

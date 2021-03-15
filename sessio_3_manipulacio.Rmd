@@ -1,0 +1,229 @@
+---
+title: "Curs de manipulació de dades en R"
+subtitle: "Sessió 3: Manipulació de dades en R"
+author: "Eudald Correig i Fraga"
+date: "`r format(Sys.time(), '%d de %B de %Y')`"
+output: ioslides_presentation
+---
+
+# Tidyverse
+
+## Introducció
+
+Conjunt de paquets d'R per fer "data science".
+
+[https://www.tidyverse.org/](https://www.tidyverse.org/)
+
+Unifica l'anàlisi de dades en R.
+
+## Paquets dins de tidyverse
+
+> ggplot2
+
+# Exploració de les dades
+
+## Estructura
+
+Fem una ullada a les dades
+
+```{r, eval=T}
+str(dades) #mostra estructura d'un objecte
+```
+
+## Primeres i últimes files
+
+```{r, eval=F}
+head(dades) #mostra les primeres files
+```
+
+```{r, eval=T}
+tail(dades) #mostra les darreres files
+```
+
+## Visualització tipus "excel"
+
+```{r, eval=FALSE}
+View(dades) # mostra tot el conjunt de dades 
+```
+
+## Resum
+
+```{r}
+summary(ex)
+```
+
+
+
+
+# Manipulació de variables
+
+##  Creació noves variables
+
+Entrem les alçades i els pesos:
+
+```{r}
+dades$alcada = rnorm(nrow(dades), mean = 170, sd = 10)
+dades$pes = rnorm(nrow(dades), mean = 75, sd = 10)
+```
+
+Índex de massa corporal $imc= \frac{pes}{alçada^{2}}$
+
+```{r, eval=T}
+alcada.m<-dades$alcada/100
+dades$imc<-dades$pes/ alcada.m^2
+```
+
+
+## Visualitzem
+
+\small
+```{r}
+head(dades)
+```
+
+
+
+## Recodificació de variables
+
+re-codificar imc: <18;18-<25;25-<30;>30
+```{r, eval=T}
+dades$imccat <- rep(0, nrow(dades))
+dades$imccat[dades$imc<18]<-0
+dades$imccat[dades$imc>=18 & dades$imc<25]<-1
+dades$imccat[dades$imc>=25 & dades$imc<30]<-2
+dades$imccat[dades$imc>=30]<-3
+
+dades$imccat<-factor(dades$imccat,levels=c(0,1,2,3),
+                     labels=c("baix pes","normal",
+                              "sobrepes","obesitat"))
+
+# Alternativa
+dades$imccat <- cut(dades$imc, breaks=c(-Inf,18,25,30,Inf), 
+                    labels = c("baix pes","normal",
+                               "sobrepes","obesitat"))
+```
+
+
+## Funcions de transformació de variables
+
+- as.numeric()
+
+- as.character()
+
+- as.factor()
+
+
+
+## Transformació de variables:exemples
+
+- as.numeric
+
+```{r, eval=T}
+a<-c("1", "3", "5")
+as.numeric(a)
+
+```
+
+Compte quan passem de caràcter a numèric!!!
+
+```{r, eval=T}
+b<-c("1", "est", "5")
+as.numeric(b)
+```
+
+
+## Transformació de variables:exemples
+
+Compte quan passem de factor a numèric!!!
+
+```{r, eval=T}
+b<-factor(c("1", "10", "5"))
+as.numeric(b)
+```
+
+Passem sempre per as.character:
+```{r}
+as.numeric(as.character(b))
+```
+
+## Ordenar dataframes
+
+- Ordenar per una variable
+```{r, eval=FALSE}
+dades<-dades[order(dades$imc),]
+```
+
+- Ordenar per més d'una variable
+```{r, eval=FALSE}
+dades<-dades[order(dades$sexe,dades$imc),]
+```
+
+- Ordre descendent
+```{r, eval=FALSE}
+dades<-dades[order(dades$sexe,-dades$imc),]
+```
+
+
+# Gràfics amb ![](input/RLogo.png){ width=10% }
+
+## Introducció
+
+- En R hi ha moltes llibreries per fer gràfics
+- R base té capacitat per fer gràfics simples
+- Per gràfics més avançats la llibreria més utilitzada és "ggplot2"
+- N'hi ha d'altres, com ara "plotly".
+- En aquest curs utilitzarem el paquet base i ggplot2 a l'última classe.
+
+
+## Funció "plot"
+
+```{r, eval = F}
+plot(x = var.x, 
+     y = var.y, 
+     type = "tipus",
+     col = "color",
+     pch = "tipus de punt",
+     cex = "mida del punt",
+     lwd = "amplada de la línia",
+     main = "títol",
+     sub = "subtítol",
+     xlab = "nom de l'eix x",
+     ylab = "nom de l'eix y",
+     ...)
+
+```
+
+
+## Funció "plot": diagrames de caixes
+
+- Si li passem una variable categòrica sap que ha de fer boxplots:
+
+```{r fig1, fig.height=4.5}
+plot(dades$sexe, dades$edat, main = "diagrama de caixes",
+     xlab = "sexe", ylab = "edat")
+```
+
+**
+
+## Funció "plot": diagrames de punts
+
+- Si les dues variables són contínues fa un gràfic de punts:
+
+```{r fig2, fig.height=4.5}
+plot(dades$pes, dades$imc, pch = 20, col = "red", cex = 2.5,
+     main = "diagrama de punts", xlab = "pes", ylab = "imc")
+```
+
+## Histograma
+
+```{r fig3, fig.height=5.5}
+hist( dades$edat, main = "histograma",xlab = "imc")
+```
+
+## Fi
+
+\center
+\Large
+
+Final de la classe 1.
+

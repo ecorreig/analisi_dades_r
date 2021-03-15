@@ -1,0 +1,233 @@
+---
+title: "Curs de manipulació de dades en R"
+subtitle: "Sessió 2: Bases de dades en R"
+author: "Eudald Correig i Fraga"
+date: "`r format(Sys.time(), '%d de %B de %Y')`"
+output: ioslides_presentation
+---
+
+# Què és una base de dades
+
+## Introducció
+
+Objecte d'emmagatzematge de dades. 
+
+Des d'un excel a la base de dades d'Hisenda.
+
+Poden ser de taula única, relacionals o indexades.
+
+En llenguatge per excel·lència és SQL (Structured Query Language).
+
+[https://www.w3schools.com/sql](https://www.w3schools.com/sql/trysql.asp?filename=trysql_select_all)
+
+# SQL
+
+## Seleccionar: SELECT
+
+> SELECT * FROM nom_taula;
+
+> SELECT columna1, columna2 FROM nom_taula;
+
+## Filtrar: WHERE
+
+> SELECT * FROM nom_taula WHERE columna1 > 10;
+
+> SELECT * 
+FROM nom_taula 
+WHERE age > 10 
+AND city LIKE "%ona";
+
+## Operadors lògics:
+\tiny
+| Símbol | Descripció
+|--------|:-------------:| 
+|= |	Igual	|
+|> | Més gran que		|
+|<	| Més petit que	|
+|>=	| 	Més gran o igual	|
+|<=		| Més petit o igual		|
+|<>	o !=	| No igual		|
+|BETWEEN		| Entre un cert rang	|
+|LIKE		| Buscar un patró (amb %)		|
+|IN		| Especificar múltiples entrades	|
+
+
+# Llegir dades externes en R
+
+## Introducció
+\bgroup
+\hypersetup{linkcolor = blue}
+\listoffigures
+\egroup
+
+- R sap llegir dades de gairebé qualsevol format.
+- El sistema és habitualment senzill i només cal tenir en compte quina llibreria cal en cada cas.
+- En general, l'objecte generat és un dataframe
+
+```{r,echo=FALSE, results='hide'}
+set.seed(1)
+
+library(knitr)
+tab<-rbind(cbind("Text (.csv)"
+, "Base/Readr", 
+"read.csv(ruta, header=TRUE, row.names='id')"),
+
+cbind("Text (.txt/ .csv)"
+, "Base/Readr/data.table", 
+"read.table(ruta, header=TRUE, sep=',', row.names='id')"),
+
+cbind("Text (.txt/ .csv)"
+, "readr", 
+"read_delim(ruta, delim)"),
+
+cbind("MSExcel (.xls / .xlsx)"
+, "readxl", 
+"read_excel( ruta)"),
+
+
+cbind("SPSS (.sav)"
+, "haven", 
+"read_spss(ruta)"),
+
+
+cbind("Stata (.dta)"
+, "haven", 
+"read_dta(ruta)"),
+
+
+cbind("SAS (.xpt)"
+, "haven", 
+"read_xpt(ruta)"))
+
+colnames(tab)<-c("Format", "Llibreria","Sintaxis")
+```
+
+\tiny
+```{r,echo=FALSE}
+kable(tab, row.names=FALSE)
+```
+
+##  Exemple: csv
+
+Manera clàssica:
+
+```{r}
+dades <- read.csv("input/dades.csv", stringsAsFactors = T)
+# write.csv(dades, "output/dades.csv")
+```
+
+Manera "moderna":
+
+```{r}
+dades <- readr::read_csv(
+  "input/dades.csv", locale = readr::locale(encoding = "latin1")
+  )
+# write.csv(dades, "output/dades.csv")
+```
+
+##  Exemple: excel
+
+```{r}
+ex <- readxl::read_excel("input/Heart.xlsx")
+# openxlsx::write.xlsx(ex, "output/Heart.xlsx")
+```
+
+## Exemple: SPSS
+
+```{r}
+sp <- haven::read_spss("input/pulse2sa.sav")
+# haven::write_spss("output/pulse2sa.sav")
+```
+
+## Socrata
+
+Socrata Open Data API (SODA) és un protocol per emmagatzemar i aconseguir dades públiques.
+
+És utilitzat per governs, ONGs i per entitats sense ànim de lucre.
+
+https://dev.socrata.com/
+
+## RSocrata
+
+```{r}
+library(RSocrata)
+start <- lubridate::today() - 15
+p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
+q <- paste0("?$where=resultatcoviddescripcio='Positiu PCR' and data > '", 
+            start, "'")
+s <- "&$select=data,municipicodi,numcasos"
+l <- paste0(p, q, s)
+covid <- read.socrata(l, stringsAsFactors = F)
+```
+
+
+# Bases de dades relacionals
+
+## Postgres
+
+```{r, eval=F}
+library(RPostgreSQL)
+con <- dbConnect(
+  PostgreSQL(),
+  dbname = 'atom',
+  host = 'localhost',
+  port = 5432,
+  user = 'postgres',
+  password = ''
+)
+codi <- '1'
+text <- "select * from schools where codi = $1;"
+query <- dbSendQuery(con, text, list(codi))
+schools <- dbFetch(query)
+dbClearResult(query)
+```
+
+## MySQL
+
+```{r, eval=F}
+library(DBI)
+library(odbc)
+con <- DBI::dbConnect(
+  odbc::odbc(),
+  Driver   = "driver",
+  Server   = "servidor",
+  UID      = rstudioapi::askForPassword("Usuari"),
+  PWD      = rstudioapi::askForPassword("Contrasenya"),
+  Port     = 3306
+)
+dbGetQuery(con,'
+  select "month_idx", "year", "month",
+  sum(case when "term_deposit" = \'yes\') as subscribe,
+  count(*) as total
+  from "bank"
+  group by "month_idx", "year", "month"
+')
+```
+
+## MongoDB
+
+```{r, eval=F}
+con <- DBI::dbConnect(
+  odbc::odbc(),
+  Driver        = "driver",
+  Server        = "servidor",
+  Port          = 27017,
+  Database      = "bbdd",
+  AuthMechanism = "SCRAM-SHA-1",
+  # <- Example
+  UID           = rstudioapi::askForPassword("Usuari"),
+  PWD           = rstudioapi::askForPassword("Contasenya")
+)
+```
+
+## Documentació
+
+[https://db.rstudio.com/databases/](https://db.rstudio.com/databases/)
+
+## Fi
+
+\center
+\Large
+
+Final de la sessió 2.
+

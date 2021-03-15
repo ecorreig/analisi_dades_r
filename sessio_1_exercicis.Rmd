@@ -1,6 +1,6 @@
 ---
 title: "Sessió 1: Exercicis"
-author: "El vostre nom"    # Poseu aquí davant el vostre nom! No us oblideu de les cometes
+author: "El vostre nom" # Podeu posar aquí el vostre nom No us oblideu de les cometes
 output: html_document
 ---
 
