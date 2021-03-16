@@ -1,6 +1,6 @@
 ---
 title: "Sessió 1: Exercicis"
-author: "El vostre nom" # Podeu posar aquí el vostre nom No us oblideu de les cometes
+author: "Eudald"
 output: html_document
 ---
 
@@ -8,33 +8,56 @@ output: html_document
 # No toqueu aquesta part
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(1234)
+library(RXKCD)
 ```
 
 # Exercici 1
 
 * On és físicament el teu espai de treball?
 
-```{r}
-# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
+El meu espai de treball és:
 
+```{r}
+# això és un comentari
+getwd()
 ```
 
-* Llista els objectes d'aquest espai de treball
+* Llista els objectes d'aquest espai de treball (ls())
+
+El llistat d'objectes és:
+
+```{r}
+ls()
+```
+
 * Crea un nou objecte que sigui la suma de dos nombres
+
+He creat la suma següent:
+
+```{r}
+diners <- 10 + 25
+print(diners)
+```
+
 * Esborra aquest objecte
+
+Ara l'esborro.
+
+```{r}
+rm(diners)
+```
+
 
 # Exercici 2
 
-
-* Descarrega el paquet RXKCD (fora del markdown)
+* Instal·la el paquet RXKCD (fora del markdown)
 * Consulta l'ajuda per saber què fa aquest paquet (fora del markdown)
 * Afegeix la llibreria 
 * Investiga què fa la funció getXKCD (fora del markdown)
 * Consulta el còmic 539
 
 ```{r}
-# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
-
+getXKCD(which = 539)
 ```
 
 # Exercici 3: vectors

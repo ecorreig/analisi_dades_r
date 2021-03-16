@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 # Què és el Markdown?
@@ -37,7 +37,7 @@ a = sin(pi*x)
 
 Aquí puc tornar a escriure normal. Fins i tot puc fer coses com **negreta** o *cursiva*.
 
-```{r}
+```{r, echo=TRUE}
 # Puc fer que imprimeixi resultats
 liver = read.csv('input/indian_liver_patient.csv')
 summary(liver)
@@ -57,6 +57,7 @@ Puc fer llistes:
 
 I enumeracions:
 
+1. El zero
 1. Primer
 1. Segon
 1. Tercer  (sí, no m'he equivocat, el númeor del principi ha de ser sempre 1...)

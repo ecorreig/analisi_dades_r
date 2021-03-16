@@ -1,11 +1,11 @@
 ---
 title: "Curs de manipulació de dades en R"
-subtitle: "Sessió 1: Introducció a R"
 author: "Eudald Correig i Fraga"
-
 date: "`r format(Sys.time(), '%d de %B de %Y')`"
-output: ioslides_presentation
-
+output:
+  beamer_presentation: default
+  ioslides_presentation: default
+subtitle: 'Sessió 1: Introducció a R'
 ---
 
 # Estructura del curs

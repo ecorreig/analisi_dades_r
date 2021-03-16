@@ -38,7 +38,7 @@ WHERE age > 10
 AND city LIKE "%ona";
 
 ## Operadors lògics:
-\tiny
+
 | Símbol | Descripció
 |--------|:-------------:| 
 |= |	Igual	|
@@ -63,6 +63,8 @@ AND city LIKE "%ona";
 - R sap llegir dades de gairebé qualsevol format.
 - El sistema és habitualment senzill i només cal tenir en compte quina llibreria cal en cada cas.
 - En general, l'objecte generat és un dataframe
+
+## Comandes
 
 ```{r,echo=FALSE, results='hide'}
 set.seed(1)
@@ -151,13 +153,17 @@ https://dev.socrata.com/
 
 ```{r}
 library(RSocrata)
-start <- lubridate::today() - 15
+start <- lubridate::today() - 30
 p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
 q <- paste0("?$where=resultatcoviddescripcio='Positiu PCR' and data > '", 
             start, "'")
 s <- "&$select=data,municipicodi,numcasos"
 l <- paste0(p, q, s)
 covid <- read.socrata(l, stringsAsFactors = F)
+```
+
+```{r}
+covid_historic <- read.socrata("https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json")
 ```
 
 
