@@ -1,0 +1,82 @@
+---
+title: "Sessió 2 i 3: Exercicis"
+author: "El vostre nom" 
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# No toqueu aquesta part
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1234)
+```
+
+# Exercici 1
+
+- Importa el fitxer pulse2sa.sav.
+- Mira l'estructura (str) i fes-ne un resum (summary).
+- Poseu els títols del dataframe capitalitzats: primera majúscula, la resta minúscules. 
+Pista: busqueu la funció str_to_title del paquest stringr.
+- Categoritza correctament el sexe, no les dones són l'1 són els homes i el 2 les dones.
+- Categoritza l'exercici, 1 és mai, 2 és a vegades, i 3 és molt.
+- Categoritza el fumar, 1 és que no i 2 és que sí.
+- Calcula l'imc i les categoires de la OMS.
+- Quina alçada mitjana tenen homes i dones?
+- Quina és la persona més vella que fuma?
+- Quina és la persona més jove que **no** fa exercici?
+
+Expora els objectes resultants fent servir les funcions str, summary i View.
+
+# Exercici 2
+
+Recordeu que les comandes eren: 
+
+```{r}
+library(RSocrata)
+start <- lubridate::today() - 30
+p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
+q <- paste0("?$where=resultatcoviddescripcio='Positiu PCR' and data > '", 
+            start, "'")
+l <- paste0(p, q)
+covid <- read.socrata(l, stringsAsFactors = F)
+```
+
+- Inspeccioneu el dataframe resultant a veure si està tot bé (sobretot els tipus de les columnes).
+
+Mireu les dades Reus i a Tarragona.
+- Quants n'hi ha hagut en cada lloc?
+- Quants casos hi ha hagut segons cada mètode de detecció?
+- Agafa aquelles observacions en les que hi ha hagut més de 5 casos. (Podeu reimportar amb el filtre a la query o fer-ho des de l'R).
+- Quin ha sigut el dia i la comarca amb més casos de l'últim mes?
+- Hi ha hagut més casos en homes o en dones?
+
+Ara totes les dades una altra vegada:
+
+- En quina comarca hi ha hagut més casos en aquest últim més? (podeu fer servir la funció arrange)
+
+```{r}
+covid %>%
+  mutate(
+    comarcadescripcio = as.factor(comarcadescripcio),
+    numcasos = as.numeric(numcasos)
+    ) %>%
+  group_by(comarcadescripcio) %>%
+  summarise(across(numcasos, sum)) %>%
+  arrange(-numcasos)
+```
+
+- Agafa les dades de l'excel municipis.xlsx i ajunta'ls amb el covid per municipi.
+
+Compte perquè els noms a covid estan en majúscules i sense accents i en municipis estan ben escrits. Pots canviar els de municipis fent:
+
+```{r}
+muns <- muns %>%
+  mutate(
+    Municipi = toupper(stringi::stri_trans_general(Municipi, "Latin-ASCII"))
+  )
+```
+
+(és cutre, ho sé, però és lo que hi ha...)
+
+- Calcula l'incidència acumulada a 14 dies (la IA són els casos observats en els últims n dies dividits per la població total).
+
+- Descansa.
