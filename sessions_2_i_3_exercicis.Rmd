@@ -34,9 +34,8 @@ Recordeu que les comandes eren:
 library(RSocrata)
 start <- lubridate::today() - 30
 p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
-q <- paste0("?$where=resultatcoviddescripcio='Positiu PCR' and data > '", 
-            start, "'")
-l <- paste0(p, q)
+q <- glue::glue("?$where=data > '{start}'")
+l <- glue::glue(p, q)
 covid <- read.socrata(l, stringsAsFactors = F)
 ```
 
@@ -52,17 +51,6 @@ Mireu les dades Reus i a Tarragona.
 Ara totes les dades una altra vegada:
 
 - En quina comarca hi ha hagut més casos en aquest últim més? (podeu fer servir la funció arrange)
-
-```{r}
-covid %>%
-  mutate(
-    comarcadescripcio = as.factor(comarcadescripcio),
-    numcasos = as.numeric(numcasos)
-    ) %>%
-  group_by(comarcadescripcio) %>%
-  summarise(across(numcasos, sum)) %>%
-  arrange(-numcasos)
-```
 
 - Agafa les dades de l'excel municipis.xlsx i ajunta'ls amb el covid per municipi.
 
