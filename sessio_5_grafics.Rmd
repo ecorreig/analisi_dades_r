@@ -1,0 +1,62 @@
+---
+title: "Gràfics"
+author: "Eudald"
+date: "16/3/2021"
+output: html_document
+---
+
+# Gràfics amb ![](input/RLogo.png){ width=10% }
+
+## Introducció
+
+- En R hi ha moltes llibreries per fer gràfics
+- R base té capacitat per fer gràfics simples
+- Per gràfics més avançats la llibreria més utilitzada és "ggplot2"
+- N'hi ha d'altres, com ara "plotly".
+- En aquest curs utilitzarem el paquet base i ggplot2 a l'última classe.
+
+
+## Funció "plot"
+
+```{r, eval = F}
+plot(x = var.x, 
+     y = var.y, 
+     type = "tipus",
+     col = "color",
+     pch = "tipus de punt",
+     cex = "mida del punt",
+     lwd = "amplada de la línia",
+     main = "títol",
+     sub = "subtítol",
+     xlab = "nom de l'eix x",
+     ylab = "nom de l'eix y",
+     ...)
+
+```
+
+
+## Funció "plot": diagrames de caixes
+
+- Si li passem una variable categòrica sap que ha de fer boxplots:
+
+```{r fig1, fig.height=4.5}
+plot(dades$sexe, dades$edat, main = "diagrama de caixes",
+     xlab = "sexe", ylab = "edat")
+```
+
+**
+
+## Funció "plot": diagrames de punts
+
+- Si les dues variables són contínues fa un gràfic de punts:
+
+```{r fig2, fig.height=4.5}
+plot(dades$pes, dades$imc, pch = 20, col = "red", cex = 2.5,
+     main = "diagrama de punts", xlab = "pes", ylab = "imc")
+```
+
+## Histograma
+
+```{r fig3, fig.height=5.5}
+hist( dades$edat, main = "histograma",xlab = "imc")
+```
