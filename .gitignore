@@ -1,2 +1,6 @@
 .Rproj.user
 *Rproj
+proves*
+*log
+*tex
+.Rhistory
