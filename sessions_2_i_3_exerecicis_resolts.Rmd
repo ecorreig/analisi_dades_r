@@ -1,0 +1,361 @@
+---
+title: "Exercicis resolts - Sessions 2 i 3"
+author: "Eudald"
+date: "17/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# No toqueu aquesta part
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+set.seed(1234)
+library(dplyr)
+```
+
+Poso els paquests explícitament quan crido les funcions perquè veieu d'on ve cadascun excepte dplyr que el farem servir tant que si no quedaria malament. 
+
+# Exercici 1
+
+- Importa el fitxer pulse2sa.sav.
+
+```{r}
+df <- haven::read_spss("input/pulse2sa.sav")
+```
+
+- Mira l'estructura (str) i fes-ne un resum (summary).
+
+```{r}
+str(df)
+```
+
+Fixeu-vos que aquí hi ha molta més informació de la que vèiem a la classe. Això és perquè està important part de la informació extra de cada variable que té l'spss i ens l'ensenya aquí. En qualsevol cas, veiem que les variables ID, HEIGHT, WEIGHT i AGE són numèriques, cosa que ja està bé, però després en tenim 5 (GENDER, SMOKES, ALCOHOL, EXERCISE i TRT) que estan com a dbl+lbl. Això vol dir double precision (un número, vaja) i labelled, és a dir, que ha importat els noms de cada un dels nivells de l'spss. Però fixeu-vos que els ha important però no ha convertit a factor, per tant ho haurem de fer a mà. Suposo que no tardaran a crear un argument a read_spss que ho faci sol, però encara no el tenim. Podeu trobar més informació aquí:
+
+https://cran.r-project.org/web/packages/labelled/vignettes/intro_labelled.html
+
+En tot cas, és fàcil de convertir (el paquet labelled s'instal·la automàticament amb el haven en teoria, així que ja l'hauríeu de tenir).
+
+```{r}
+# df -> canvia (mutate) -> en les variables (across) -> 
+#  -> tals que (where) són "labelled" (is.labelled) -> converteix a factor (to_factor)
+df <- df %>%
+  mutate(across(where(labelled::is.labelled), labelled::to_factor))
+# Noteu que estic fent servir el to_factor del labelled i no el as.factor normal, això
+# és perquè si no no portaria els labels bé.
+# (si tot això és molt complicat sempre ho podeu fer a mà una per una!)
+```
+
+Tornem a mirar:
+
+```{r}
+str(df)
+```
+
+Molt millor!
+
+- Poseu els títols del dataframe capitalitzats: primera majúscula, la resta minúscules. 
+Pista: busqueu la funció str_to_title del paquest stringr.
+
+```{r}
+# Recordeu que la titlla es fa servir per dir "amb la funció tal:".
+# Fixeu-vos també amb el punt com a paràmetre de la funció. Això vol dir que ho faci sobre tot el 
+# tibble tal com el tenim en aquell moment.
+df <- df %>%
+  rename_with(~ stringr::str_to_title(.))
+```
+
+- Categoritza correctament el sexe, no les dones són l'1 són els homes i el 2 les dones.
+- Categoritza l'exercici, 1 és mai, 2 és a vegades, i 3 és molt.
+- Categoritza el fumar, 1 és que no i 2 és que sí.
+
+Aquests tres ja estan fets.
+
+- Calcula l'imc i les categoires de la OMS.
+
+```{r}
+df <- df %>%
+  mutate(
+    imc = Weight / (Height / 100) ^ 2,
+    imc = case_when(
+      imc < 18 ~ "Baix pes",
+      imc < 25 ~ "Normopès",
+      imc < 30 ~ "Sobrepès",
+      T ~ "Obesitat"
+    ),
+    imc = as.factor(imc)
+  )
+```
+
+- Quina alçada mitjana tenen homes i dones?
+
+```{r}
+df %>%
+  group_by(Gender) %>%
+  # Un error clàssic és posar el mean fora de l'across; compte amb això
+  summarise(across(Height, mean))
+```
+
+- Quina és la persona més vella que fuma?
+
+```{r}
+df %>%
+  filter(Smokes == "Si") %>%
+  # Això no ho vaig dir però tot i no agrupar podem treure el summary si
+  # només hi ha un grup, però fixeu-vos que es fa lleugerament diferent, 
+  # ja que posem el max directament i sense l'across
+  summarise(max(Height))
+
+# Una altra manera
+df %>%
+  filter(Smokes == "Si", Height == max(Height)) %>%
+  # Sense el select tindríem totes les dades de tot el pacient.
+  select(Height)
+```
+
+Si volguéssim treure només el número, podríem fer servir pull en lloc de select. Pull ens treu l'estructura de tibble i ens retorna un vector, que en alguns casos pot ser útil:
+
+```{r}
+df %>%
+  filter(Smokes == "Si", Height == max(Height)) %>%
+  # Sense el select tindríem les dades de tot el pacient.
+  pull(Height)
+```
+
+- Quina és la persona més jove que **no** fa exercici?
+
+```{r}
+df %>%
+  filter(Exercise == "Gens") %>%
+  summarise(min(Age))
+```
+
+Expora els objectes resultants fent servir les funcions str, summary i View.
+
+```{r}
+summary(df)
+```
+
+
+# Exercici 2
+
+Agafeu les dades de COVID a Catalunya dels últims 30 dies.
+
+Recordeu que les comandes eren: 
+
+```{r}
+library(RSocrata)
+start <- lubridate::today() - 30
+p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
+# Fixeu-vos amb les cometes simples de l'start! Això és perquè lo que passarà aquí 
+# dins en el fons és un string i el Socrata ho ha de saber
+q <- glue::glue("?$where= data > '{start}'")
+l <- glue::glue(p, q)
+covid <- read.socrata(l, stringsAsFactors = F)
+orig <- covid
+```
+
+La query completa que hem llençat és:
+
+```{r}
+l
+```
+
+Podeu trobar la documentació de les queries de SODA aquí: 
+
+[https://dev.socrata.com/docs/queries/](https://dev.socrata.com/docs/queries/)
+
+i aquí els operadors:
+
+[https://dev.socrata.com/docs/functions/#,](https://dev.socrata.com/docs/functions/#,)
+
+*NOTA:* fixeu-vos que les dades no són una fila per cada pacient, si no que són una fila per cada dia, ciutat, sexe i mètode de detecció i el número de casos són tots els casos en cada categoria.
+
+- Inspeccioneu el dataframe resultant a veure si està tot bé (sobretot els tipus de les columnes).
+
+```{r}
+str(covid)
+```
+
+Veiem que tot està codificat a caràcter menys la data, que és correta. També veiem que hi ha codis de comarca, municipi i districte. Durant aquest exercici no els farem servir, així que els trec. I també trec el nom del districte que no m'interessa. Codifiquem correctament:
+
+```{r}
+covid <- covid %>%
+  # Treu totes les columnes que acaben amb "codi" (evidentment, 
+  # ho podem fer llistant-les una per una també) i treu també 
+  # el nom del districte
+  select(-c(ends_with("codi"), districtedescripcio)) %>%
+  mutate(
+    # Converteix el número de casos a numèric
+    numcasos = as.numeric(numcasos),
+    # I tota la resta (que encara son caràcters) a factor
+    across(where(is.character), as.factor)
+  )
+```
+
+```{r}
+str(covid)
+```
+
+Tot sembla que estigui be excepte el sexe, on hi ha res factors. Investiguem:
+
+```{r}
+table(covid$sexedescripcio)
+```
+
+Tenim `r table(covid$sexedescripcio)['No classificat']` observacions amb pacients no classificats. Per ara els deixo però recordem que si hem de mirar diferències entre sexes aquests els haurem de treure.
+
+La resta perfecte.
+
+Mireu les dades Reus i a Tarragona.
+
+```{r}
+# Fixeu-vos que creo un objecte nou per no reescriure l'anterior i aprofitar-lo més endavant. 
+rt <- covid %>%
+  filter(municipidescripcio %in% c("REUS", "TARRAGONA"))
+head(rt)
+```
+
+- Quants n'hi ha hagut en cada lloc?
+
+```{r}
+rt %>% 
+  group_by(municipidescripcio) %>%
+  summarise(across(numcasos, sum))
+```
+
+- Quants casos hi ha hagut segons cada mètode de detecció?
+
+```{r}
+rt %>% 
+  group_by(resultatcoviddescripcio) %>%
+  summarise(across(numcasos, sum))
+```
+
+- Agafa aquelles observacions en les que hi ha hagut més de 5 casos. (Podeu reimportar amb el filtre a la query o fer-ho des de l'R).
+
+Amb la query:
+
+```{r, eval=F}
+# Fixeu-vos aquí sobre que hi diu eval=F, això és perquè quest chunk no corri 
+# quan faci knit. Aprofitaré les dades que ja tenia.
+p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
+# Fixeu-vos amb l'"in", que seria com el d'SQL
+# Fixeu-vos també amb les cometes simples (apòstrofs) pels caràcters de la data i de REUS i TARRAGONA. 
+# Posem cometes simples perquè les dobles ja s'estan fent servir per crear la comanda
+q <- glue::glue("?$where= data > '{start}' and numcasos > 5 and municipidescripcio in('REUS', 'TARRAGONA')")
+l <- glue::glue(p, q)
+covid <- read.socrata(l, stringsAsFactors = F)
+```
+
+Si ho feu amb la query haureu de tornar a formatejar.
+
+Amb R:
+
+```{r, eval=F}
+rt <- rt %>%
+  filter(numcasos > 5)
+```
+
+- Quin ha sigut el dia i la comarca amb més casos de l'últim mes?
+
+```{r}
+rt %>%
+  filter(numcasos == max(numcasos)) %>%
+  select(data, comarcadescripcio, numcasos)
+```
+
+- Hi ha hagut més casos en homes o en dones?
+
+```{r}
+rt %>%
+  group_by(sexedescripcio) %>%
+  summarise(across(numcasos, sum))
+```
+
+Ara totes les dades una altra vegada:
+
+- En quina comarca hi ha hagut més casos en aquest últim més? (podeu fer servir la funció arrange)
+
+```{r}
+covid %>%
+  group_by(comarcadescripcio) %>%
+  summarise(across(numcasos, sum)) %>%
+  arrange(-numcasos)
+```
+
+- Agafa les dades de l'excel municipis.xlsx i ajunta'ls amb el covid per municipi.
+
+```{r}
+muns <- readxl::read_excel("input/municipis.xlsx")
+```
+
+Compte perquè els noms a covid estan en majúscules i sense accents i en municipis estan ben escrits. Pots canviar els de municipis (traient els accents i passant-ho a majúscula) fent:
+
+```{r}
+muns <- muns %>%
+  mutate(
+    Municipi = toupper(stringi::stri_trans_general(Municipi, "Latin-ASCII"))
+  )
+```
+
+(és cutre, ho sé, però és lo que hi ha...). 
+
+```{r}
+tot <- covid %>%
+  inner_join(muns, by = c("municipidescripcio" = "Municipi"))
+```
+
+Reviseu que ho ha fet bé:
+
+```{r}
+summary(tot)
+```
+
+No té mala pinta.
+
+- Calcula l'incidència acumulada a 14 dies per cada 100.000 habitants (la IA són els casos observats en els últims n dies dividits per la població total multiplicat per 100.000).
+
+```{r}
+tot %>%
+  filter(data > lubridate::today() - 14) %>%
+  # Compte que aquí estic fent una cosa curiosa: estic agrupant per municipi i també per 
+  # població del municipi, això és perquè si no perdo la variable de Població, però en 
+  # realitat no està agrupant res perquè ja ho fa municipi
+  # Si no veiéssiu això clar, podríeu treure només el municipi i després fer un 
+  # left_join amb el dataframe original per recuperar-ne la població
+  group_by(municipidescripcio, Població) %>%
+  # Fixeu-vos que en el summarise podeu crear una nova variable així:
+  summarise(numcasos = sum(numcasos)) %>%
+  # En aquest moment tenim un dataframe intermig amb tres columnes: municipi, població
+  # i la suma de casos de cada població. (Recomano que trenqueu la pipe aquí i l'inspeccioneu)
+  # Seguim però i calculem la IA aquí mateix:
+  mutate(
+    IA = numcasos / Població * 100000
+  ) %>%
+  # Això ho veurem dimecres que ve, però ho podem treure una mica mono:
+  # Deixem només dos decimals a IA:
+  mutate(IA = round(IA, 2)) %>%
+  # Ordenem de més IA a menys:
+  arrange(-IA) %>%
+  # Posem els noms bonics:
+  rename(
+    c("Municipi" = "municipidescripcio", "Número de casos" = "numcasos", "Incidència a 14 dies" = "IA")
+    ) %>%
+  # Traiem una taula cuqui
+  kableExtra::kable() %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+    full_width = F
+    )
+```
+
+Documentació: 
+
+[https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html](https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html)
+
+- Descansa.
+
+Si aquest és el vostre estat ara mateix és normal:
+
+![](https://media.giphy.com/media/3o6ZtaiPZNzrmRQ6YM/giphy.gif)
+
+:-)
