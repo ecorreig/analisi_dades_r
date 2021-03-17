@@ -1,6 +1,7 @@
 ---
-title: "Sessió 1: Exercicis"
+title: "Exercicis resolts - Sessió 1"
 author: "Eudald"
+date: "17/3/2021"
 output: html_document
 ---
 
@@ -9,19 +10,45 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(1234)
 library(RXKCD)
+library(dplyr)
 ```
 
 # Exercici 1
 
 * On és físicament el teu espai de treball?
-* Llista els objectes d'aquest espai de treball (ls())
-* Crea un nou objecte que sigui la suma de dos nombres
-* Esborra aquest objecte
+
+El meu espai de treball és:
 
 ```{r}
-# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
-
+# això és un comentari
+getwd()
 ```
+
+* Llista els objectes d'aquest espai de treball (ls())
+
+El llistat d'objectes és:
+
+```{r}
+ls()
+```
+
+* Crea un nou objecte que sigui la suma de dos nombres
+
+He creat la suma següent:
+
+```{r}
+diners <- 10 + 25
+print(diners)
+```
+
+* Esborra aquest objecte
+
+Ara l'esborro.
+
+```{r}
+rm(diners)
+```
+
 
 # Exercici 2
 
@@ -32,8 +59,7 @@ library(RXKCD)
 * Consulta el còmic 539
 
 ```{r}
-# Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
-
+getXKCD(which = 539)
 ```
 
 # Exercici 3: vectors
@@ -48,7 +74,11 @@ sample(0:20, 10).
 
 ```{r}
 # Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
-
+sample(100, 20)
+a <- seq(1, 40, by = 2)
+b <- rep(c("home", "dona"), 10)
+d <- rep(c("control", "intervenció"), 10)
+e <- a[a < 25]
 ```
 
 # Exercici 4: dataframes
@@ -58,11 +88,14 @@ sample(0:20, 10).
 	- Edat  (numèrica: genera 10 números aleatoris entre el 18 i el 99. 
 	- Sexe  (factor: genera 5 parelles Home/ Dona)
 * crea un nou dataframe amb les dades dels 4 primeres pacients i les variables d'índex i edat. 
-* Crea un nou dataframe amb només les dones. **Pista: recorda que en la subselecció, si volem agafar totes les columes, és fa en la forma dades[condició,]**
+* Crea un nou dataframe amb només les dones. 
 * Crea un altre dataframe amb els pacients amb l'edat per sobre de la mitjana.
 
 
 ```{r}
 # Recorda, crea "chunks" per les solucions, en pots crear un per cada exercici o un per cada pregunta.
-
+dades <- data.frame("Index" = 1:10, "Edat" = sample(18:99, 10), "Sexe" = rep(c("Home", "Dona"), 5))
+nou <- dades %>% slice_head(n = 4) %>% select(-Sexe)
+dones <- dades %>% filter(Sexe == "Dona")
+grans <- dades %>% filter(Edat > mean(Edat))
 ```
