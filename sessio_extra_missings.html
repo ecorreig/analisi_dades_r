@@ -491,6 +491,18 @@ temp &lt;- mice(clean_aq, method = &quot;pmm&quot;)</code></pre>
 <pre class="r"><code>df &lt;- readxl::read_excel(&quot;dades_netes.xlsx&quot;) %&gt;%
   mutate(across(where(is.character), as.factor))</code></pre>
 </div>
+<div id="ps-coses-que-no-shan-de-fer-gairebé-mai" class="section level1">
+<h1>PS: coses que no s’han de fer [gairebé] mai</h1>
+<div id="reemplaçar-els-missings-amb-0" class="section level2">
+<h2>Reemplaçar els missings amb 0</h2>
+<p>Això no es pot fer perquè el 0 no té res d’especial i l’únic que farà serà trencar les distribucions de les nostres variables de manera que arruïnarà tots els anàlisis. Només es pot substituir per 0 en el cas de que estiguem parlant d’un llindar de detecció d’una màquina: per exemple, tenim una màquina que no detecta senyar per sota de 0.1 i aleshores dóna missing. Si això ho sabem, sí que podem substituir per 0 (o 0.05 o 0.1, segons s’acostumi a fer en el nostre camp).</p>
+</div>
+<div id="reemplaçar-els-missings-amb-la-mitjana" class="section level2">
+<h2>Reemplaçar els missings amb la mitjana</h2>
+<p>Tampoc es pot fer perquè el que farem serà estar reduint la dispersió (desviació estàndard i rang interquartítil) de la mostra artificialment i també destrossarem el nostre anàlisi.</p>
+<p>El més correcte és doncs imputar!</p>
+</div>
+</div>
 
 
 

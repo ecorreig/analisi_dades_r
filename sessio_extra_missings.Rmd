@@ -141,4 +141,16 @@ df <- readxl::read_excel("dades_netes.xlsx") %>%
   mutate(across(where(is.character), as.factor))
 ```
 
+# PS: coses que no s'han de fer [gairebé] mai
+
+## Reemplaçar els missings amb 0
+
+Això no es pot fer perquè el 0 no té res d'especial i l'únic que farà serà trencar les distribucions de les nostres variables de manera que arruïnarà tots els anàlisis. Només es pot substituir per 0 en el cas de que estiguem parlant d'un llindar de detecció d'una màquina: per exemple, tenim una màquina que no detecta senyar per sota de 0.1 i aleshores dóna missing. Si això ho sabem, sí que podem substituir per 0 (o 0.05 o 0.1, segons s'acostumi a fer en el nostre camp).
+
+## Reemplaçar els missings amb la mitjana
+
+Tampoc es pot fer perquè el que farem serà estar reduint la dispersió (desviació estàndard i rang interquartítil) de la mostra artificialment i també destrossarem el nostre anàlisi. 
+
+El més correcte és doncs imputar!
+
 
