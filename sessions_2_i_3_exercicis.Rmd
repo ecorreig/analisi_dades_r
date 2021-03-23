@@ -6,16 +6,17 @@ output: html_document
 
 ```{r setup, include=FALSE}
 # No toqueu aquesta part
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = T)
 set.seed(1234)
 ```
 
 # Exercici 1
 
-- Importa el fitxer pulse2sa.sav.
+- Importa el fitxer pulse2sa.sav. (package haven)
 - Mira l'estructura (str) i fes-ne un resum (summary).
-- Poseu els títols del dataframe capitalitzats: primera majúscula, la resta minúscules. 
+- Poseu els títols del dataframe capitalitzats: primera majúscula, la resta minúscules.
 Pista: busqueu la funció str_to_title del paquest stringr.
+
 - Categoritza correctament el sexe, no les dones són l'1 són els homes i el 2 les dones.
 - Categoritza l'exercici, 1 és mai, 2 és a vegades, i 3 és molt.
 - Categoritza el fumar, 1 és que no i 2 és que sí.
@@ -56,7 +57,7 @@ Ara totes les dades una altra vegada:
 
 Compte perquè els noms a covid estan en majúscules i sense accents i en municipis estan ben escrits. Pots canviar els de municipis fent:
 
-```{r}
+```{r, eval=F}
 muns <- muns %>%
   mutate(
     Municipi = toupper(stringi::stri_trans_general(Municipi, "Latin-ASCII"))
