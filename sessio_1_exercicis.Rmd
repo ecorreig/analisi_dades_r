@@ -58,7 +58,7 @@ sample(0:20, 10).
 	- Edat  (numèrica: genera 10 números aleatoris entre el 18 i el 99. 
 	- Sexe  (factor: genera 5 parelles Home/ Dona)
 * crea un nou dataframe amb les dades dels 4 primeres pacients i les variables d'índex i edat. 
-* Crea un nou dataframe amb només les dones. **Pista: recorda que en la subselecció, si volem agafar totes les columes, és fa en la forma dades[condició,]**
+* Crea un nou dataframe amb només les dones. 
 * Crea un altre dataframe amb els pacients amb l'edat per sobre de la mitjana.
 
 
