@@ -435,15 +435,15 @@ tot <- tot %>%
     ) %>%
   drop_na() %>%
   group_by(municipidescripcio, densitat, Població) %>%
-  summarise(sum = sum(ratio_casos))
+  summarise(total_casos = sum(ratio_casos))
 ```
 
 ## Gràfics
 
 ```{r}
-ggplot(tot, aes(x = log(densitat), y = log(sum), size = Població)) + 
+ggplot(tot, aes(x = log(densitat), y = log(total_casos), size = Població)) + 
   geom_point() +
-  geom_smooth(method = "lm") + 
+  geom_smooth(method = "lm", se = F) + 
   theme(legend.position = "none")
 ```
 
@@ -505,7 +505,7 @@ ggplot(liver[sample, ], aes(x=Albumin, y=Total_Protiens, colour="orange")) +
 ## Regressió lineal en R - Univariant {.smaller}
 
 ```{r, echo = TRUE}
-model = lm(Total_Protiens ~ Albumin, data = df)
+model = lm(Total_Protiens ~ Albumin + Gender, data = df)
 summary(model)
 ```
 
@@ -559,6 +559,35 @@ model4 = glm(Malaltia ~ Age + Gender + Total_Bilirubin, data=df, family="binomia
 ggplot(df, aes(x = Age, y = Total_Bilirubin, colour = Malaltia)) + 
   geom_point()
 ```
+
+## Models de classificació
+
+```{r, echo=F}
+df <- df %>%
+  mutate(
+    edat_cat = case_when(
+      Age < 30 ~ "<30",
+      Age < 65 ~ "30-65",
+      T ~ "> 65"
+    )
+  )
+table(df$edat_cat)
+```
+
+Multinomial Regression
+
+Random Forest
+
+```{r}
+library(randomForest)
+randomForest(Malaltia ~ Age + Gender + Total_Bilirubin, data=df)
+```
+
+Boosted models
+
+paquet: xgboost
+
+
 
 ## Resum
 
