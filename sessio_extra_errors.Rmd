@@ -1,0 +1,234 @@
+---
+title: "Errors!"
+author: "Eudald"
+date: "19/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Fixeu-vos amb l'error = T, això és per poder mostrar-vos els errors!
+knitr::opts_chunk$set(echo = TRUE, error = T)
+```
+
+## Introducció
+
+En aquesta classe repassarem els errors més comuns que tots fem en R i aprendrem a
+identificar-los i solucionar-los.
+
+## Carreguem dades
+
+```{r}
+liver <- read_csv("indian_liver_patient.csv")
+```
+
+No heu carregat la llibreria!
+
+```{r}
+library(readr)
+liver <- read_csv("indian_liver_patient.csv")
+```
+
+No troba el fitxer? Fixeu-vos que és perquè està dins de la carpeta input:
+
+```{r}
+liver <- read_csv(input/indian_liver_patient.csv)
+```
+
+Ara ens hem deixat les cometes!
+
+```{r}
+liver <- read_csv("input/indian_liver_patient.csv")
+```
+
+Si no ens diu res és que tot correcte (en principi).
+
+## Manipulació
+
+En aquesta bbdd, la variable Dataset ens indica malaltia o no. Volem canviar el nom de la variable i codificar correctament l'estat:
+
+Primer canviem el nom de la variable a "Malaltia"
+
+```{r}
+liver %>% rename(Malaltia = Dataset)
+```
+
+El paquet una altra vegada...
+
+```{r}
+library(dplyr)
+liver %>% rename(Dataset = Malaltia)
+```
+
+Ho hem posat al revés! El nom nou va al principi:
+
+```{r}
+liver %>% rename(Dataset = Malaltia)
+```
+
+Ara ha funcionat, però per què m'ho està imprimint en pantalla?
+Perquè no ho he fet apuntar una altra vegada a liver!
+
+```{r}
+liver <- liver %>% rename(Malatia = Dataset)
+```
+
+Ara vull canviar els valors de Malatia, posant 1 a "No malalt" i 2 a "Malalt".
+
+```{r}
+liver <- liver %>%
+  mutate(Malatia = case_when(
+    Malaltia = 1, No malalt
+    Malaltia = 2, Malalt
+  )
+  )
+```
+
+Ui quin drama. Si ens fixem, ens diu unexpected ",". Això vol dir que en la primera coma que veu, no hi hauria d'haver una coma. Si mirem els exemples (recordeu, ?case_when) el primer és:
+
+![Exemple case_when](input/case_when.png)
+
+Entre el condicional i el valor necessitem una titlla (~), no una coma!
+
+```{r}
+liver <- liver %>%
+  mutate(Malatia = case_when(
+    Malaltia = 1 ~ No malalt
+    Malaltia = 2 ~ Malalt
+  )
+  )
+```
+
+Ara no li agrada el parèntesi. Aquest és potser una mica més difícil de veure, però si mirem a l'exemple una altra vegada, veiem que, després de cada condició, hi ha una coma.
+
+```{r}
+liver <- liver %>%
+  mutate(Malatia = case_when(
+    Malaltia = 1 ~ No malalt,
+    Malaltia = 2 ~ Malalt,
+  )
+  )
+```
+
+Ara sembla que no hi agrada la coma primera una altra vegada. Tornem a mirar l'exemple; veiem que és perquè els valors són cadenes alfanumèriques, per tant han d'anar entre cometes!
+
+```{r}
+liver <- liver %>%
+  mutate(Malatia = case_when(
+    Malaltia = 1 ~ "No malalt",
+    Malaltia = 2 ~ "Malalt",
+  )
+  )
+```
+
+Estem avançant! Ara ens diu que hi ha un problema amb la primera condició (Malaltia = 1). Diu que espera un valor lògic però li hem donat un valor numèric (double vol dir numèric). Si ens hi fixem bé, veiem que Malaltia = 1 està creant un objecte que es diu Malatia i que val 1 ja que només hem posat un =. Recordem que per mirar una condició necessitem dos iguals!
+
+```{r}
+liver <- liver %>%
+  mutate(Malatia = case_when(
+    Malaltia == 1 ~ "No malalt",
+    Malaltia == 2 ~ "Malalt",
+  )
+  )
+```
+
+Ara sí!
+
+![](https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif)
+
+## Subseleccions
+
+Ara volem agafar trossos de l'objecte. Això ho fem amb select i filter:
+
+Imaginem que volem agafar només les dones (Female)
+
+```{r}
+liver %>% 
+  filter(Gender = Female)
+```
+
+Fixeu-vos que aquí l'error ja ens diu que potser ens hem deixat un igual una altra vegada! Efectivament:
+
+```{r}
+liver %>% 
+  filter(Gender == Female)
+```
+
+Object 'Female' not found; les cometes!!
+
+```{r}
+dones <- liver %>% 
+  filter(Gender == "Female")
+```
+
+Ara sí!
+
+Ara volem seleccionar les variables Age, Gender i Total_bilirubin:
+
+```{r}
+liver %>%
+  select(Age, Gender, Total_Bilirubin)
+```
+
+Aquesta era fàcil.
+
+Ara volem agafar tots els que siguin numèrics:
+
+```{r}
+liver %>%
+  select(is.numeric)
+```
+
+Val, això sembla que potser ha funcionat, però ens dóna un Warning interessant. Això passa a vegades, la funció ens està dient que, tot i que va bé, hauríem de posar un filter. Intenteu fer aquests canvis perquè en un futur és possible que canviïn la funció i en lloc de donar un warning, doni un error.
+
+Hem de fer:
+
+```{r}
+liver %>%
+  select(where(is.numeric))
+```
+
+Un altre error típic en el seleccionar en una condició és fer: 
+
+```{r}
+liver %>%
+  select(where(is.numeric()))
+```
+
+Quan fem aquests tipus de seleccions la funció de condició **no** porta parèntesis.
+
+Filtres:
+
+```{r}
+liver %>%
+  filter(Gender = Female)
+```
+
+Dos iguals, no un!
+
+```{r}
+liver %>%
+  filter(Gender == Female)
+```
+
+Falten les cometes!
+
+```{r}
+liver %>%
+  filter(Gender == "Female")
+```
+
+Ara sí.
+
+```{r}
+liver %>%
+  filter(c(Gender == "Female", Albumin > 3))
+```
+
+Si tenim dues condicions, en aquest cas **no** hem de posar un vector, simplement anar-lies llistat:
+
+```{r}
+liver %>%
+  filter(Gender == "Female", Albumin > 3)
+```
+
+
