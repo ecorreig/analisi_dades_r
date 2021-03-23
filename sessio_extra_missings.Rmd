@@ -1,0 +1,144 @@
+---
+title: "Data que falta (missings)"
+author: "Eudald"
+date: "23/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(dplyr)
+```
+
+```{r}
+set.seed(1234)
+```
+
+
+# Introducció
+
+R està dissenyat perquè haguem de tractar les dades faltants abans de començar qualsevol tipus d'anàlisi, ja que si no aquests la majoria de vegades ens donaran problemes. 
+
+Les dades faltants poden ser de tres tipus: 
+
+1. MCAR (missing completely at random o faltants de forma totalment aleatòria): es tracta de valors que per alguna cosa no han entrat mai a la base de dades (un alumne que no ha conestat una pregunta de l'enquesta perquè l'ha saltat sense voler) o un valor incorrecte que hem convertit a un outlier (un pacient té un imc de 233; sabem que algú s'ha equivocat en teclejar però no sabem si el valor correcte és 23 o 33 o una altra cosa). Aquests valors faltants no són excessivament problemàtics i en general els poden imputar.
+
+1. MAR (missing at random o faltants de forma aleatòria): com que les coses no són prou difícils ja doncs els donem noms per confondre per fer-les encara una mica pitjor. Aquestes dades faltants *no* són aleatòries, el que passa és que sabem el motiu pel que falten i no té a veure amb l'estudi en qüestió. Per exemple, potser els alumnes homes contestaran menys a una enquesta de factors de depressió que una alumna dona. Aquests valors sovint també es poden imputar, tot i que amb compte.
+
+1. MNAR (missing not at random o faltants no aleatoris): aquests són valors que falten per alguna raó: per exemple, alumnes que no vulguin fer un test d'ITS a la universitat per saben que tenen molts números de tenir una ITS. Amb aquests no es pot fer res i s'han de descartar les observacions o les variables afectades o repensar l'estudi en qüestió. 
+
+# Com saber de quin tipus són els missings?
+
+## Estructura
+
+Primer mirem quants n'hi ha en cada variable. Per exemple, ho podem fer la llibreria [visdat](https://cran.r-project.org/web/packages/visdat/vignettes/using_visdat.html).
+
+```{r}
+library(visdat)
+vis_dat(airquality)
+```
+
+Veiem doncs un gràfic amb el tipus de variables que tenim i amb els missings en cada columna. D'aquí ja podem tenir una bona idea de quins problemes podríem tenir.  
+
+Si volem els missings en percentatges, podem fer:
+
+```{r}
+vis_miss(airquality)
+```
+
+Aquí veiem un cas típic de falta de dades: tenim quatre variables perfectes (vent, temperatura, mes i dia), una amb alguns missings (radiació solar) i una amb molts missings (ozó). Aquí hem de saber o preguntar a la persona que ha creat les dades si hi ha algun raó per la qual l'ozó té tantes dades faltants. Podria ser que l'aparell de mesura fallés més molt però de forma aleatòria (MCAR), podria ser que fallés quan fa molt de vent perquè sabem que es tomba i no mesura bé (MAR) o bé que quan hi ha massa ozó (o massa poc) no funciona i s'apaga (MNAR). Depenent de la resposta a aquesta pregunta haurem d'actuar d'una forma o d'una altra i el millor que podem fer és aconseguir aquesta informació. Si per alguna raó no la tenim, podem investigar una mica més, per exemple amb el paquet [naniar](http://naniar.njtierney.com/articles/getting-started-w-naniar.html).
+
+Anem a veure si podem trobar quin tipus de missings tenim. Per fer-ho, podem fer gràfics amb les llibreries ggplot i la llibreria naniar on posem els punts que falten. En aquest cas, mirem si hi ha relació entre la radiació solar i l'ozó (o les dades faltants de l'ozó):
+
+```{r}
+library(ggplot2)
+library(naniar)
+
+ggplot(airquality, aes(x = Solar.R, y = Ozone)) + 
+  geom_miss_point()
+```
+
+Veiem que els valors fantalts d'ozó estan repartits de forma aleatòria en l'eix de la radiació solar, així que probablement no sigui això. Mirem amb el vent:
+
+```{r}
+ggplot(airquality, aes(x = Wind, y = Ozone)) + 
+  geom_miss_point()
+```
+
+Sembla força clar que no és el vent. Mirem amb la temperatura:
+
+```{r}
+ggplot(airquality, aes(x = Temp, y = Ozone)) + 
+  geom_miss_point()
+```
+
+Tampoc veiem massa res excepte en els troços en els que fa molt de fred.
+
+Com que tenim el mes, investiguem si potser té a veure amb l'època de l'any:
+
+```{r}
+ggplot(airquality, aes(x = Temp, y = Ozone)) +
+  geom_miss_point() +
+  facet_wrap( ~ Month)
+```
+
+Aquí sembla força clar que al juny hi va haver molts missings! Potser la persona que cuidava l'aparell era de vacances? No ho sabem, però intuïm que els missings on són aleatoris i que per tant aquesta variable no es pot utilitzar. 
+
+## Accions
+
+Aleshores tenim 2 opcions: 
+
+a) Si es pot, llancem aquesta variable (opció preferida).
+b) Si aquesta variable és molt important, llancem les observacions que falten. *Molt de compte* amb això, però, perquè que faltin observacions influeix òbviament en els resultats, encara que les traguem. Si ens assegurem que és perquè la persona està de vacances (ja que coneixem la raó de la falta de variables i no té a veure amb l'experiment), estem en un cas de MAR i ho podem treure, però si no, no podríem fer servir aquesta variable.
+
+```{r}
+# opció A
+clean_aq <- airquality %>% select(-Ozone)
+```
+
+Imaginem que hem fet l'oció a, ara ens queda una base de dades que té menys d'un 5% de dades faltants en una de les variables, i hem vist que són aleatòries (o ho podríem estudiar millor, però amb tants pocs missings no sembla greu). Ara tenim dues opcions: 
+
+a) Descartem les observacions amb dades faltants
+
+```{r}
+cleaner_aq <- clean_aq %>% tidyr::drop_na()
+```
+
+b) Imputem:
+
+Podem fer servir el paquet [mice](https://stefvanbuuren.name/fimd/):
+
+```{r}
+library(mice)
+temp <- mice(clean_aq, method = "pmm")
+```
+
+Compte perquè la funció mice té molts arguments i solen ser importants. Sobretot el número d'imputacions que farem, les iteracions que farem i el mètode que farem servir. Sovint, si estem fent anàlisis ràpids, els valors per defecte ja van bé, però per anàlisis finals podem anar provant. Trobareu la documentació de la funció [aquí](https://cran.r-project.org/web/packages/mice/mice.pdf), pàgines 72-79.
+
+Si voleu una altra funció ámb menys arguments i que generalment va bé (excepte si teniu variables amb categories amb pocs valors), també podeu fer servir la funció missForest del paquet [missForest](https://cran.r-project.org/web/packages/missForest/missForest.pdf):
+
+```{r}
+tt <- missForest::missForest(clean_aq)
+dfi <- tt$ximp
+```
+
+Aquest fa una imputació sempre amb el mètode de random forest (el mice també ho pot fer amb el mètode de random forest posant method = "rf").
+
+# Detalls
+
+Els processos d'imputació solen tenir passos en els que es prenen decisions aleatòries. Això, a priori, trenca amb la idea de "reproducible research", de manera que R té una manera de generar números aleatoris però que sempre siguin els mateixos (és a dir, números pseudoaleatoris). Això es fa amb la funció set.seed(num), on "num" és un enter i farà de llavor d'aleatorietat (fixeu-vos que l'he posat al primer chunk). Això farà que es generin números aleatoris, però que cada vegada que fem "knit" siguin els mateixos.
+
+Tot i així, com que els processos d'imputació solen ser força lents, recomano que, una vegada tingueu la vostra base de dades formatejada, neta i imputada ja sense missings, l'exporteu per exemple en un excel o un csv i feu els anàlisis en un altre document sempre amb la mateixa base de dades. 
+
+```{r}
+writexl::write_xlsx(dfi, "dades_netes.xlsx")
+```
+
+Recordeu que quan torneu a cridar el fitxer des d'un altre document haureu de tornar a formatejar les variables categòriques, que s'hauran carregat com a caràcters. Podeu fer:
+
+```{r}
+df <- readxl::read_excel("dades_netes.xlsx") %>%
+  mutate(across(where(is.character), as.factor))
+```
+
+
