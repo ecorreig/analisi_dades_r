@@ -1,0 +1,123 @@
+---
+title: "Curs de manipulació de dades en R"
+subtitle: 'Sessió 5: Gràfics, mapes i taules - Taules'
+author: "Eudald"
+date: "19/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(dplyr)
+library(kableExtra)
+```
+
+Hi ha diverses llibreries per fer taules amb R, però la més utilitzada és [kableExtra](https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html). La documentació està molt bé així que la recomano.
+
+Volem fer una taula sobre casos de COVID. Agafo coses ja calculades dels exercicis. Tenim això:
+
+```{r}
+df <- readxl::read_excel("ia_neta.xlsx") %>%
+  arrange(-Població)
+```
+
+```{r}
+glimpse(df)
+```
+
+Tinc doncs municipis, poblacions, número de casos i incidència.
+
+Ho trec a una taula amb la funció kbl (la filtro també perquè no quedi molt llarga):
+
+```{r}
+df %>%
+  filter(Població > 100000) %>%
+  kbl()
+```
+
+No està malament, però no és cap meravella. Li puc donar estil amb la funció kable_styling, que té diferentes possibilitats que podeu buscar a la documentació:
+
+```{r}
+df %>%
+  filter(Població > 100000) %>%
+  kbl() %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+    full_width = F
+    )
+```
+
+Fixeu-vos que és (una mica) responsive.
+
+Si sou més aviat clàssics:
+
+```{r}
+df %>%
+  filter(Població > 100000) %>%
+  kbl(caption = "Classy és bo") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Podeu especificar coses sobre cel·les amb column_spec:
+
+```{r}
+df %>%
+  filter(Població > 100000) %>%
+  kbl() %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+    full_width = F
+    ) %>%
+column_spec(1, bold = T, border_right = T) %>%
+  column_spec(4, width = "10em", background = "yellow")
+```
+
+Però això no té massa sentit; potser ho volem fer en funció del valor:
+
+```{r}
+temp <- df  %>%
+  filter(Població > 100000)
+temp %>% 
+  kbl() %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"), 
+    full_width = F
+    ) %>%
+column_spec(1, bold = T, border_right = T) %>%
+  column_spec(4, width = "10em", background = spec_color(temp$`Incidència a 14 dies`, end = 0.7, option = "B", direction = -1))
+```
+
+Afegeixo el logo perquè sí:
+
+```{r}
+temp <- df  %>%
+  filter(Població  > 100000)
+temp %>%
+  mutate(URV = "") %>%
+  kbl() %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = F
+  ) %>%
+  column_spec(1, bold = T, border_right = T) %>%
+  column_spec(
+    4,
+    width = "15em",
+    background = spec_color(
+      temp$`Incidència a 14 dies`,
+      end = 0.7,
+      option = "B",
+      direction = -1
+    )
+  ) %>%
+  column_spec(5, image = spec_image(
+    ifelse(
+      temp$Municipi %in% c("REUS", "TARRAGONA"),
+      "input/urv-centrat-color.png",
+      "input/blank.png"
+    ),
+    100,
+    50
+  ))
+```
+

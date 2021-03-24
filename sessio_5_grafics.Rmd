@@ -1,9 +1,22 @@
 ---
-title: "Gràfics"
+title: "Curs de manipulació de dades en R"
+subtitle: 'Sessió 5: Gràfics, mapes i taules - Gràfics'
 author: "Eudald"
-date: "16/3/2021"
+date: "19/3/2021"
 output: html_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(dplyr)
+```
+
+# Contingut
+
+- Gràfics: R base, ggplot2, plotly
+- Mapes: leaflet
+- Taules: kableExtra
+
 
 # Gràfics amb ![](input/RLogo.png){ width=10% }
 
@@ -13,7 +26,6 @@ output: html_document
 - R base té capacitat per fer gràfics simples
 - Per gràfics més avançats la llibreria més utilitzada és "ggplot2"
 - N'hi ha d'altres, com ara "plotly".
-- En aquest curs utilitzarem el paquet base i ggplot2 a l'última classe.
 
 
 ## Funció "plot"
@@ -34,29 +46,480 @@ plot(x = var.x,
 
 ```
 
-
 ## Funció "plot": diagrames de caixes
 
 - Si li passem una variable categòrica sap que ha de fer boxplots:
 
-```{r fig1, fig.height=4.5}
-plot(dades$sexe, dades$edat, main = "diagrama de caixes",
-     xlab = "sexe", ylab = "edat")
+```{r, echo=F}
+df <- readr::read_csv("input/Heart.csv") %>%
+  mutate(
+    Sex = ifelse(Sex == 0, "Female", "Male"),
+    across(where(is.character), as.factor)
+  ) %>%
+  select(-X1)
 ```
 
-**
+
+```{r}
+plot(df$Sex, df$Age, main = "diagrama de caixes",
+     xlab = "sexe", ylab = "edat")
+```
 
 ## Funció "plot": diagrames de punts
 
 - Si les dues variables són contínues fa un gràfic de punts:
 
 ```{r fig2, fig.height=4.5}
-plot(dades$pes, dades$imc, pch = 20, col = "red", cex = 2.5,
-     main = "diagrama de punts", xlab = "pes", ylab = "imc")
+plot(df$RestBP, df$MaxHR, pch = 20, col = "red", cex = 2.5,
+     main = "diagrama de punts", xlab = "Rest Blood Pressure", ylab = "Max Heart Rate")
 ```
 
 ## Histograma
 
 ```{r fig3, fig.height=5.5}
-hist( dades$edat, main = "histograma",xlab = "imc")
+hist(df$Age, main = "histograma",xlab = "Edat")
 ```
+
+# ggplot
+
+- Llibreria de gràfics de tidyverse.
+- El nom prové de Grammar of Graphics, un [llibre teòric]((http://www.springer.com/us/book/9780387245447)) sobre com es fan els gràfics digitals.
+- També podeu trobar l'article del creador [aquí](https://vita.had.co.nz/papers/layered-grammar.pdf. 
+- Documentació [aquí](https://ggplot2.tidyverse.org/).
+- LLibre molt útil [aquí](https://r-graphics.org/).
+
+## Com funciona:
+
+```{r}
+library(ggplot2)
+ggplot(df, aes(x = Sex, y = Chol, colour = AHD)) + 
+  geom_boxplot()
+```
+
+- La funció ggplot() crea el gràfic i sempre necessita dos paràmetres:
+    1. Les dades amb les que fer el gràfic: o ve ens vénen d'una pipe o bé les posem al principi
+    1. Els estètics (aesthetics en anglès, d'aquí el nom): aquí hi posem quina variable volem a l'eix x i y, i si volem colors o formes diferents.
+- Per acabar, li diem quin tipus de gràfic volem, en aquest cas un diagrama de caixes (boxplot).
+
+Ho mirem en el plot:
+
+```{r}
+ggplot(df, # liver és el nom del dataframe
+       aes(x = Sex, # Variable en l'eix x 
+           y = Chol, # Variable en l'eix y
+           colour = AHD # Color: alerta, perquè el color crea grups!
+           )) + # fixeu-vos en el signe "+" per afegir més comandes a la instrucció
+  geom_boxplot() # geom_alguna_cosa() crea el tipus de plot que vulguem, en aquest cas un boxplot. Per saber els tipus de plots que hi ha podem anar a https://ggplot2.tidyverse.org/reference/
+```
+
+Un altre exemple:
+
+```{r}
+df %>%
+  ggplot(aes(Age, RestBP, colour = AHD)) + 
+  geom_point()
+```
+
+geom_point() veiem que ens fa gràfics de punts, els adequats quan tenim dues variables contínues.
+
+Fixeu-vos que aquí hem fet servir la pipe.
+
+En lloc dels boxplots, potser volem els violin plots:
+
+```{r}
+ggplot(df, aes(x = Sex, y = RestBP, colour = AHD)) + 
+  geom_violin() +
+  theme_bw() + 
+  labs(title = "Violin plot, que són molt monos", 
+       subtitle = "I aquí hi va un subtítol si volem") + 
+  xlab("Gènere") + 
+  ylab("Ritme cardíac en repòs")
+```
+
+```{r}
+ggplot(df, aes(x = Sex, y = RestBP, colour = AHD, fill = AHD)) + 
+  geom_violin(alpha = 0.7) + # aquesta alpha fa que el color no sigui sòlid
+  theme_bw() + 
+  labs(title = "Violin plot, que són molt monos", 
+       subtitle = "I aquí hi va un subtítol si volem") + 
+  xlab("Gènere") + 
+  ylab("Ritme cardíac en repòs")
+```
+
+A partir d'aquí hi ha moltíssimes maneres de personalitzar un diagrama:
+
+```{r}
+ggplot(df, aes(x = Age, y = MaxHR, colour = AHD, shape = Sex)) + 
+  geom_point(size=1.5) + 
+  labs(title = "Gràfic puc útil", 
+       subtitle = "Però molt fàcil de fer") + 
+  xlab("Edat") +
+  ylab("Batecs per minut màxims") +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+Fixeu-vos que colour i shape em creen "grups", és a dir, que quan li demano que em faci rectes (geom_smooth), me les fa segons els grups que li he fet crear a aes. Això és molt important!
+
+Veieu però que aquest gràfic és bastant horrible perquè hem volgut posar massa informació a la vegada. Ho podem separar de forma fàcil amb facet_wrap:
+
+```{r}
+ggplot(df, aes(x = Age, y = MaxHR, colour = AHD)) + 
+  geom_point(size=1.5) + 
+  facet_wrap(~ Sex) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic més útil") + 
+  xlab("Edat") +
+  ylab("Batecs per minut màxims") +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+Bastant millor! Ara per exemple veig que a les dones que tenen AHD els puja els batecs per minut màxims amb l'edat. Això no té bona pinta!
+
+## Estètica
+
+Paletes de colors:
+
+Imaginem que tinc aquest gràfic, que faig amb les dades de contaminació:
+
+```{r}
+library(readr)
+library(tidyr)
+library(lubridate)
+library(glue)
+cont <- read_csv("input/contaminacio.csv", locale = locale(encoding="latin1")) %>%
+  select(data, municipi, contaminant, unitats, starts_with("h")) %>%
+  mutate(contaminant = glue("{contaminant} ({unitats})")) %>%
+  pivot_longer(starts_with("h")) %>%
+  drop_na() %>%
+  mutate(Mes = month(floor_date(data, "month"), label = T, abbr = F)) %>%
+  group_by(municipi, contaminant, Mes) %>%
+  summarise(Mitjana = mean(value)) %>%
+  ungroup() %>%
+  mutate(across(where(is.character), as.factor))
+```
+
+Les dades estan així:
+
+```{r}
+glimpse(cont)
+```
+
+Fem un gràfic per cada ciutat:
+
+```{r}
+cont %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats")
+```
+
+No està malament, però els colors són una mica lletjos i com que són colors de contaminació, busquem colors que siguin més tètrics. Podem buscar una paleta de colors que estigui bé [aquí](https://www.nceas.ucsb.edu/sites/default/files/2020-04/colorPaletteCheatsheet.pdf) i [aquí](https://www.datanovia.com/en/blog/top-r-color-palettes-to-know-for-great-data-visualization/) (i altres llocs si busqueu). En aquest segon link veiem que hi ha una paleta que es diu inferno (del paquet viridis, que és un paquet de colors només) i com que això de la contaminació és bastant infernal, sembla adequat. 
+
+Agafem els colors d'aquesta paleta amb la funció inferno que té un paràmetre, que és el nombre de colors que volem (així els espaiarà correctament):
+
+```{r}
+paleta <- viridis::inferno(length(unique(cont$contaminant)))
+```
+
+Li diem al nostre gràfic que faci servir aquests colors:
+
+```{r}
+cont %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta)
+```
+
+Molt millor!
+
+Com a recurs, també hi ha el paquet RColorBrewer, que té paletes útils. I també podem crear la nostra. Fixeu-vos que la paleta és simplement un vector de colors en format hexagesimal:
+
+```{r}
+paleta
+```
+
+Per tant res ens impedeix de crear un vector amb els colors que ens agradin i posar-los on vulguem.
+
+## Temes
+
+Els colors de les línies no són les úniques coses que són lletjotes dels gràfics. Les estètiques així més generals els retoquem amb la funció theme(). Per exemple, ens agradaria posar els noms dels mesos en diagonal perquè es vegin bé, evidentment ningú se sap la comanda per fer això, així que ho busquem a [stackoverflow](https://stackoverflow.com/questions/1330989/rotating-and-spacing-axis-labels-in-ggplot2) i trobem que podem fer:
+
+```{r}
+cont %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+```
+
+Molt bé! Ara veig que no hem capitalitzat els noms; ho fem en un moment (puc aprofitar la pipe!)
+
+```{r}
+ordre_mesos <- stringr::str_to_title(levels(cont$Mes))
+cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme(axis.text.x = element_text(angle = 45,hjust=1))
+```
+
+Volem canviar també el títol de la llegenda per posar-lo en majúscula, fem servir la funció guides() (guide = llegenda):
+
+```{r}
+cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme(axis.text.x = element_text(angle = 45,hjust=1)) + 
+  guides(colour=guide_legend(title = "Contaminant"))
+```
+
+També hi ha temes complets, per no haver d'anar canviat les coses una a una, els  podeu trobar [aquí](https://ggplot2.tidyverse.org/reference/ggtheme.html).
+
+A mi el que m'agrada més és el theme_bw()
+
+```{r}
+cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme(axis.text.x = element_text(angle = 45,hjust=1)) + 
+  guides(colour=guide_legend(title = "Contaminant")) + 
+  theme_bw()
+```
+
+Molt millor, però ens ha desaparegut lo dels noms de costat. Això és perquè els temes completes a vegades sobreescriuren les coses que nosaltres haguem posat a theme() (perquè ells també estan tocant theme). En aquest cas l'únic que hem de fer és canviar l'ordre:
+
+```{r}
+cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45,hjust=1)) + 
+  guides(colour=guide_legend(title = "Contaminant"))
+  
+```
+
+Ja tenim un gràfic prou decent, però ara el veig petit. Per veure'l més gran al markdown hem de tocar la configuració del chunk. per exemple, podem posar out.widht="100%" (fixeu-vos amb les cometes) perquè ocupi tota l'amplada.
+
+```{r, out.width="100%"}
+cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45,hjust=1)) + 
+  guides(colour=guide_legend(title = "Contaminant"))
+  
+```
+
+# plotly
+
+Plotly és una "nova" llibreria que tranforma els gràfics a javascript i html i per tant són interactius (com si fossin una pàgina web). Es pot utilitzar tant en R com en python i s'està fent molt famosa perquè es poden fer gràfics interactius de forma molt simple. 
+
+No és tan potent (a nivell de quantitat de coses que es poden fer) com ggplot2.
+
+Veiem un exemple:
+
+```{r}
+library(plotly)
+plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length)
+```
+
+Fixeu-vos que teniu comandes per fer zoom, baixar-ho en png, etc.
+
+Fixeu-vos que la forma de les comandes és semblant però aquí fem servir la titlla davant de cada variable.
+
+Coloregem segons el tipus de plantes:
+
+```{r}
+plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length, color = ~Species)
+```
+
+També es poden fer servir colors de paletes, per exemple la Spectral de la ColorBrewer:
+
+```{r}
+plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length, color = ~Species, colors = "Spectral")
+```
+
+Un altre exemple, amb les dades de covid:
+
+```{r}
+start <- lubridate::today() - 30
+p <- "https://analisi.transparenciacatalunya.cat/resource/jj6z-iyrp.json"
+# Fixeu-vos amb les cometes simples de l'start! Això és perquè lo que passarà aquí 
+# dins en el fons és un string i el Socrata ho ha de saber
+q <- glue::glue("?$where= data > '{start}'")
+covid <- RSocrata::read.socrata(glue::glue(p, q)) %>%
+  # Treu totes les columnes que acaben amb "codi" (evidentment, 
+  # ho podem fer llistant-les una per una també) i treu també 
+  # el nom del districte
+  select(-c(ends_with("codi"), districtedescripcio)) %>%
+  mutate(
+    # Converteix el número de casos a numèric
+    numcasos = as.numeric(numcasos),
+    # I tota la resta (que encara son caràcters) a factor
+    across(where(is.character), as.factor)
+  )
+```
+
+Les sumo totes i faig un gràfic d'evolució:
+
+```{r}
+covid %>%
+  group_by(data) %>%
+  summarise(Total_casos = sum(numcasos)) %>%
+  plot_ly(x = ~ data, y = ~ Total_casos, type = 'scatter', mode = 'lines+markers')
+```
+
+Es poden fer coses més complicades amb la funció add_trace. Per exemple, vull afegir les vacunes, que també trec de dades obertes:
+
+```{r}
+p <- "https://analisi.transparenciacatalunya.cat/resource/irki-p3c7.json"
+q <- glue::glue("?$where= data > '{start}'")
+vac <- RSocrata::read.socrata(glue::glue(p, q)) %>%
+  # Treu totes les columnes que acaben amb "codi" (evidentment, 
+  # ho podem fer llistant-les una per una també) i treu també 
+  # el nom del districte
+  select(-c(ends_with("CODI"), districte)) %>%
+  mutate(
+    # Converteix el número de casos a numèric
+    recompte = as.numeric(recompte),
+    # I tota la resta (que encara son caràcters) a factor
+    across(where(is.character), as.factor)
+  )
+
+tot <- covid %>%
+  inner_join(vac, by = c("data" = "data", "municipidescripcio" = "municipi")) %>%
+  group_by(data) %>%
+  summarise(Total_casos = sum(numcasos), Total_vacunes = sum(recompte))
+```
+
+```{r}
+fig <- plot_ly(tot, x = ~data, y = ~Total_casos, name = 'Casos totals', 
+               type = 'scatter', mode = 'lines+markers')
+fig <- fig %>% add_trace(y = ~Total_vacunes, name = 'Vacunes totals', mode = 'lines+markers')
+fig
+```
+
+Potser volem posar les vacunes en un segon eix, es fa amb la funció layout i l'argument yaxis:
+
+```{r}
+fig <- plot_ly(tot, x = ~data, y = ~Total_casos, name = 'Casos totals', 
+               type = 'scatter', mode = 'lines+markers')
+fig <- fig %>% add_trace(y = ~Total_vacunes, name = 'Vacunes totals', mode = 'lines+markers', yaxis = "y2")
+fig <- fig %>% layout(yaxis2 = list(overlaying = "y", side = "right"))
+fig
+```
+
+Tot i que, com veieu, això no és molt recomanable.
+
+Potser millor afegir les vacunes com a barres? També es pot fer:
+
+```{r}
+fig <- plot_ly(tot, x = ~data, y = ~Total_casos, name = 'Casos totals', 
+               type = 'scatter', mode = 'lines+markers')
+fig <- fig %>% add_trace(y = ~Total_vacunes, name = 'Vacunes totals', type = 'bar', yaxis = "y2", opacity=0.6)
+fig <- fig %>% layout(yaxis2 = list(overlaying = "y", side = "right"))
+fig
+```
+
+També tenim l'opció de convertir un gràfic de ggplot a plotly:
+
+```{r}
+pl <- cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  ggplot(aes(x = Mes, y = Mitjana, colour = contaminant, group = contaminant)) + 
+  geom_line() + 
+  facet_wrap(~ municipi) + # Fixeu-vos amb la titlla per dir "en funció de"
+  labs(title = "Gràfic de contaminació") + 
+  xlab("") +
+  ylab("Contaminació en les seves unitats") + 
+  scale_color_manual(values = paleta) + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45,hjust=1)) + 
+  guides(colour=guide_legend(title = "Contaminant"))
+
+ggplotly(pl)
+```
+
+Fixeu-vos però que no canvia els eixos quan fem desaparèixer línies; el podem fer originalment amb plotly fent servir la funció group_map de dplyr i subplot de plotly:
+
+```{r}
+cont %>%
+  mutate(
+    Mes = stringr::str_to_title(Mes),
+    # Asseguro que quan els capitalitzo no es desordenin
+    Mes = forcats::fct_relevel(Mes, ordre_mesos) 
+    ) %>%
+  # Hem d'agrupar *abans* del gràfic perquè plotly ja vol veure
+  # les dades agrupades en els grups que sortiran en el gràfic
+  group_by(municipi) %>%
+  group_map(~ plot_ly(data=., x = ~Mes, y = ~Mitjana, color = ~contaminant, 
+                      type = "scatter", mode="lines"), keep=TRUE) %>%
+  subplot(nrows = 1, shareX = TRUE, shareY=TRUE)
+  
+```
+
+
+
