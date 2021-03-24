@@ -17,7 +17,7 @@ Hi ha diverses llibreries per fer taules amb R, però la més utilitzada és [ka
 Volem fer una taula sobre casos de COVID. Agafo coses ja calculades dels exercicis. Tenim això:
 
 ```{r}
-df <- readxl::read_excel("ia_neta.xlsx") %>%
+df <- readxl::read_excel("input/ia_neta.xlsx") %>%
   arrange(-Població)
 ```
 
